@@ -1,10 +1,19 @@
+"""
+All visualizations in a single PNG.
+Run:  python visualizations.py
+Output: gradient_descent.png
+
+YOUR TASK: code loss(), gradients(), and train() in src/main.py,
+then replace _run_gradient_descent() with your own functions.
+"""
+
 import random
+import os
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import matplotlib.colors as mcolors
 
 # ─────────────────────────────────────────────
-# DONNÉES
+# DATA
 # ─────────────────────────────────────────────
 random.seed(42)
 TRUE_W, TRUE_B = 2.0, 1.0
@@ -28,7 +37,7 @@ def _mse(w, b):
     n = len(xs)
     return sum((w * x + b - y) ** 2 for x, y in zip(xs, ys)) / n
 
-# ⚡ PLACEHOLDER — remplace par tes fonctions quand tu les as codées
+# PLACEHOLDER — replace with your own functions from src/main.py
 def _run_gradient_descent(lr=0.01, epochs=300):
     w, b = 0.0, 0.0
     history = []
@@ -45,35 +54,35 @@ def _run_gradient_descent(lr=0.01, epochs=300):
 
 
 # ─────────────────────────────────────────────
-# FIGURE PRINCIPALE
+# MAIN FIGURE
 # ─────────────────────────────────────────────
 fig = plt.figure(figsize=(17, 10))
 fig.patch.set_facecolor(BG)
-fig.suptitle("Gradient Descent — de la problématique à la convergence",
+fig.suptitle("Gradient Descent — from the problem to convergence",
              color="white", fontsize=14, y=0.98)
 
 gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.35)
 
 
-# ── Panel 1 (haut-gauche) : Les données brutes ───────────────────────────────
+# Panel 1 (top-left): Raw data
 ax1 = fig.add_subplot(gs[0, 0])
-_style(ax1, "Étape 1 — Les données\nOn cherche w et b sans les connaître")
+_style(ax1, "Step 1 — The data\nFind w and b without knowing them")
 
 ax1.scatter(xs, ys, color="#7ec8e3", s=22, alpha=0.8, zorder=3,
-            label="données bruitées")
+            label="noisy data")
 x_ends = [xs[0], xs[-1]]
 ax1.plot(x_ends, [TRUE_W * x + TRUE_B for x in x_ends],
-         color="#ff6b6b", lw=2, linestyle="--", label=f"vérité : y={TRUE_W}x+{TRUE_B}")
+         color="#ff6b6b", lw=2, linestyle="--", label=f"ground truth: y={TRUE_W}x+{TRUE_B}")
 ax1.plot(x_ends, [0, 0],
-         color="#ffd166", lw=1.8, linestyle=":", label="départ algo : y=0")
+         color="#ffd166", lw=1.8, linestyle=":", label="algo start: y=0")
 ax1.set_xlabel("x", color="#888888", fontsize=8)
 ax1.set_ylabel("y", color="#888888", fontsize=8)
 ax1.legend(facecolor="#1a1a2e", labelcolor="white", fontsize=7, loc="upper left")
 
 
-# ── Panel 2 (haut-centre) : Heatmap loss landscape ───────────────────────────
+# Panel 2 (top-center): Loss landscape heatmap
 ax2 = fig.add_subplot(gs[0, 1])
-_style(ax2, "Étape 2 — Surface de perte\nL'algo cherche le creux (★)")
+_style(ax2, "Step 2 — Loss surface\nAlgo searches for the minimum (★)")
 
 w_vals = [w * 0.05 for w in range(-20, 101)]
 b_vals = [b * 0.05 for b in range(-20, 81)]
@@ -86,29 +95,29 @@ plt.colorbar(im, ax=ax2, label="MSE")
 ax2.scatter([TRUE_W], [TRUE_B], color="#00ff99", s=120, zorder=5,
             marker="*", label=f"min (w={TRUE_W}, b={TRUE_B})")
 ax2.scatter([0], [0], color="#ffd166", s=60, zorder=5,
-            marker="o", label="départ (0, 0)")
+            marker="o", label="start (0, 0)")
 ax2.set_xlabel("w", color="#888888", fontsize=8)
 ax2.set_ylabel("b", color="#888888", fontsize=8)
 ax2.legend(facecolor="#1a1a2e", labelcolor="white", fontsize=7)
 
 
-# ── Panel 3 (haut-droite) : Coupe loss(w) avec b fixé ────────────────────────
+# Panel 3 (top-right): loss(w) slice with b fixed
 ax3 = fig.add_subplot(gs[0, 2])
-_style(ax3, f"Étape 2 — Coupe loss(w)  [b={TRUE_B}]\nLa descente cherche le fond du U")
+_style(ax3, f"Step 2 — loss(w) slice  [b={TRUE_B}]\nDescent searches the bottom of the U")
 
 loss_w = [_mse(w, TRUE_B) for w in w_vals]
 ax3.plot(w_vals, loss_w, color="#7ec8e3", lw=2)
 ax3.axvline(TRUE_W, color="#00ff99", linestyle="--", lw=1.5,
-            label=f"w optimal = {TRUE_W}")
-ax3.axvline(0, color="#ffd166", linestyle=":", lw=1.5, label="départ w=0")
+            label=f"optimal w = {TRUE_W}")
+ax3.axvline(0, color="#ffd166", linestyle=":", lw=1.5, label="start w=0")
 ax3.set_xlabel("w", color="#888888", fontsize=8)
 ax3.set_ylabel("MSE", color="#888888", fontsize=8)
 ax3.legend(facecolor="#1a1a2e", labelcolor="white", fontsize=7)
 
 
-# ── Panel 4 (bas-gauche) : Le gradient ───────────────────────────────────────
+# Panel 4 (bottom-left): Gradient
 ax4 = fig.add_subplot(gs[1, 0])
-_style(ax4, "Étape 3 — Le gradient\nFlèche = direction du prochain pas (−grad)")
+_style(ax4, "Step 3 — The gradient\nArrow = direction of next step (-grad)")
 
 ax4.plot(w_vals, loss_w, color="#7ec8e3", lw=2)
 ax4.axvline(TRUE_W, color="#00ff99", linestyle="--", lw=1, alpha=0.5)
@@ -131,9 +140,9 @@ ax4.set_xlabel("w", color="#888888", fontsize=8)
 ax4.set_ylabel("MSE", color="#888888", fontsize=8)
 
 
-# ── Panel 5 (bas-centre) : Convergence de la droite (snapshots) ──────────────
+# Panel 5 (bottom-center): Line convergence snapshots
 ax5 = fig.add_subplot(gs[1, 1])
-_style(ax5, "Étape 4 — Convergence\nLa droite se cale sur les données")
+_style(ax5, "Step 4 — Convergence\nThe line fitting the data over time")
 
 history = _run_gradient_descent()
 snap_epochs = [0, 10, 30, 80, 299]
@@ -151,9 +160,9 @@ ax5.set_ylabel("y", color="#888888", fontsize=8)
 ax5.legend(facecolor="#1a1a2e", labelcolor="white", fontsize=7)
 
 
-# ── Panel 6 (bas-droite) : Courbe de loss ────────────────────────────────────
+# Panel 6 (bottom-right): Loss curve
 ax6 = fig.add_subplot(gs[1, 2])
-_style(ax6, "Étape 4 — Loss au fil des epochs\nConverge vers le minimum")
+_style(ax6, "Step 4 — Loss over epochs\nConverges toward the minimum")
 
 losses = [h[2] for h in history]
 ax6.plot(range(len(losses)), losses, color="#7ec8e3", lw=2)
@@ -164,7 +173,7 @@ for ep, col in zip(snap_epochs, snap_colors):
 
 final_w, final_b, _ = history[-1]
 ax6.text(len(losses) * 0.55, losses[0] * 0.7,
-         f"final :\nw = {final_w:.3f}\nb = {final_b:.3f}",
+         f"final:\nw = {final_w:.3f}\nb = {final_b:.3f}",
          color="white", fontsize=8,
          bbox=dict(boxstyle="round,pad=0.4", facecolor="#1a1a2e", edgecolor="#333355"))
 
@@ -175,6 +184,6 @@ ax6.set_ylabel("MSE", color="#888888", fontsize=8)
 # ─────────────────────────────────────────────
 # EXPORT
 # ─────────────────────────────────────────────
-out = "gradient_descent.png"
+out = os.path.join(os.path.dirname(__file__), "gradient_descent.png")
 fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=BG)
-print(f"Sauvegardé → {out}")
+print(f"Saved -> {out}")
